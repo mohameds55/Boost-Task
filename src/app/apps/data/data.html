@@ -1,0 +1,96 @@
+<div class="max-w-6xl mx-auto p-8">
+  <header class="text-center mb-8">
+    <h1 class="text-3xl font-semibold text-gray-900 mb-2">Data Dashboard</h1>
+    <p class="text-gray-500">
+      Welcome! You are logged in as
+      <strong class="text-blue-600">{{ selectedRole()?.label }}</strong>
+    </p>
+  </header>
+
+  <div class="bg-white border border-gray-200 rounded-xl p-6 mb-8">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="text-xs uppercase tracking-wider text-gray-500">Current Role</span>
+        <span class="inline-block bg-blue-500 text-white px-4 py-1.5 rounded-full font-semibold text-sm">
+          {{ selectedRole()?.value | textTransform }}
+        </span>
+      </div>
+      <div class="flex items-center gap-4">
+        <p class="text-gray-500 text-sm">{{ selectedRole()?.description }}</p>
+        <button
+          (click)="changeRole()"
+          class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+          type="button"
+        >
+          Change Role
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="text-xl font-semibold text-gray-900 mb-4">{{ dataTitle() }}</h2>
+
+    <app-loading-spinner *appShowWhen="isLoading()" />
+
+    <ng-container *appShowWhen="hasError()">
+      <app-error-message [message]="error()!" />
+    </ng-container>
+
+    <ng-container *appShowWhen="showData()">
+      <!-- Pagination Controls - Top -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-gray-600">Items per page:</span>
+          <p-select
+            [options]="perPageOptions"
+            [ngModel]="itemsPerPage()"
+            (ngModelChange)="onItemsPerPageChange($event)"
+            optionLabel="label"
+            optionValue="value"
+          />
+        </div>
+      </div>
+
+      <!-- Admin: Users Grid -->
+      <div *appShowWhen="isAdmin()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (user of users(); track user.id) {
+          <app-user-card [user]="user" />
+        }
+      </div>
+
+      <!-- Instructor: Posts Grid -->
+      <div *appShowWhen="isInstructor()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        @for (post of posts(); track post.id) {
+          <app-post-card [post]="post" />
+        }
+      </div>
+
+      <!-- User: Products Grid -->
+      <div *appShowWhen="isUser()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        @for (product of products(); track product.id) {
+          <app-product-card [product]="product" />
+        }
+      </div>
+
+      <!-- Manager: Countries Grid -->
+      <div *appShowWhen="isManager()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        @for (country of countries(); track country.name.common) {
+          <app-country-card [country]="country" />
+        }
+      </div>
+
+      <!-- Pagination Controls - Bottom -->
+      <div class="flex justify-center mt-8">
+        <p-paginator
+          [first]="currentPage() * itemsPerPage()"
+          [rows]="itemsPerPage()"
+          [totalRecords]="totalItems()"
+          (onPageChange)="onPageChange($event)"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+        />
+      </div>
+    </ng-container>
+  </section>
+</div>
