@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { map, Observable, of } from 'rxjs';
 
 export interface User {
   id: number;
@@ -65,7 +65,16 @@ export class DataService {
       // FakeStoreAPI uses limit parameter only (doesn't support pagination)
       endpoint += `?limit=${limit}`;
     }
-    // Countries API returns all data (no pagination support)
+    // Countries API returns all data, so we handle pagination client-side
+    else if (role === 'MANAGER') {
+      return this.http.get<RoleData>(endpoint).pipe(
+        map((countries: any) => {
+          const startIndex = (page - 1) * limit;
+          const endIndex = startIndex + limit;
+          return countries.slice(startIndex, endIndex);
+        })
+      );
+    }
 
     return this.http.get<RoleData>(endpoint);
   }
